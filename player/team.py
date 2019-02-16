@@ -5,10 +5,9 @@ Write the __init__ and the step functions. Further explanations
 about these functions are detailed in the wiki.
 
 List your Andrew ID's up here!
-andrewid1
-andrewid2
-andrewid3
-andrewid4
+bwei1
+lrwalker
+alexs1
 """
 from awap2019 import Tile, Direction, State
 
@@ -26,8 +25,7 @@ class Team(object):
         self.board = initial_board
         self.team_size = team_size
         self.company_info = company_info
-
-        self.team_name = # Add your team name here!
+        self.team_name = "Player 2"# Add your team name here!
 
     def step(self, visible_board, states, score):
         """
@@ -36,5 +34,16 @@ class Team(object):
         For more information on what visible_board, states, and score
         are, please look on the wiki.
         """
+        moves = [0,0,0,0]
 
-        pass
+        for bot in range(4):
+            info = states[bot]
+            if info.line_pos != -1:
+                moves[bot] = Direction.NONE
+            elif visible_board[info.x][info.y].get_line() != None:
+                moves[bot] = Direction.ENTER
+            else:
+                moves[bot] = Direction.UP
+
+
+        return moves
