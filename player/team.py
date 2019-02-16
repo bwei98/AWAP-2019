@@ -22,6 +22,7 @@ def checktile(self,i,j,rows,cols,initial_board):
     else:
         return initial_board[i][j].get_threshold()
 
+
 class Team(object):
 
     def __init__(self, initial_board, team_size, company_info):
@@ -38,6 +39,9 @@ class Team(object):
         self.num_rows = len(initial_board)
         self.num_cols = len(initial_board[0])
 
+        def in_bounds(self,coords):
+            return 0 <= coords[0] and coords[0] < num_rows and 0 <= coords[1] and coords[1] < num_cols
+
         for i in range(self.num_rows):
             for j in range(self.num_cols):
                 tile = initial_board[i][j]
@@ -50,24 +54,32 @@ class Team(object):
                     tileleft = self.checktile(i,j-1,self.num_rows,self.num_cols,initial_board)
                     self.graph[(i,j)] = [tileup,tiledown,
                                          tileleft,tileright]
-<<<<<<< HEAD
-        print(self.graph)
-        print("\n")
+
 
         self.lines = defaultdict(list)
-        for i in range(len(initial_board)):
-            for j in range(len(initial_board[0])):
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
                 tile = initial_board[i][j]
                 if tile.is_end_of_line():
                     self.lines[tile.get_line()] = [(i, j)]
 
-        for company, start in self.lines.items():
+        for company, (x, y) in self.lines.items():
+            end = (x, y)
+            while self.in_bounds((x-1, y)) and initial_board[x-1][y].get_line() == company:
+                end = (x-1, y)
+                x -= 1
+            while self.in_bounds((x+1, y)) and initial_board[x+1][y].get_line() == company:
+                end = (x+1, y)
+                x += 1
+            while self.in_bounds((x, y-1)) and initial_board[x][y-1].get_line() == company:
+                end = (x, y-1)
+                y -= 1
+            while self.in_bounds((x, y+1)) and initial_board[x][y+1].get_line() == company:
+                end = (x, y+1)
+                y += 1
+            self.lines[company].append(end)
 
 
-        print(initial_board)
-
-=======
->>>>>>> 16c85b3a4a4bbf2443b8f90381937ace8fbb22f2
 
         self.board = initial_board
         self.team_size = team_size
