@@ -11,6 +11,7 @@ alexs1
 """
 from awap2019 import Tile, Direction, State
 import numpy as np
+import heapq
 
 class Team(object):
     def __init__(self, initial_board, team_size, company_info):
@@ -29,15 +30,21 @@ class Team(object):
 
         compAsList = [ [k,v] for k, v in company_info.items() ]
         compAsList.sort(key = lambda x: -x[1])
-        self.sorted = compAsList
+        q = PriorityQueue()
+        for x in compAsList:
+            name, pts = x
+            q.push(name, pts)
+        self.pq = q
+
         self.company_info = company_info
         self.booths = dict()
         for i in range(len(initial_board)):
             for j in range(len(initial_board[0])):
                 tile = initial_board[i][j]
                 if tile.get_booth() != None:
-                    self.booths[(i,j)] = tile.get_booth()
-        print(self.booths)
+                    self.booths[tile.get_booth()] = (i,j)
+
+        self.targets = [None,None,None,None]
 
     def step(self, visible_board, states, score):
         """
@@ -50,12 +57,37 @@ class Team(object):
 
         for index in range(4):
             bot = states[index]
+            bot_coord = (bot.x, bot.y)
             if bot.line_pos != -1:
                 moves[index] = Direction.NONE
             elif visible_board[bot.x][bot.y].get_line() != None:
                 moves[index] = Direction.ENTER
+                self.targets[index] = None
             else:
-                moves[index] = Direction.UP
+                if self.targets[index] == None:
+                    company = self.pq.pop()
+                    new_company_pts = self.company_info[company] / 2
+                    self.company_info[company] = new_company_pts
+                    self.pq.push(company, new_company_pts)
+                    self.targets[index] = company
+                company_coord = self.booths[self.targets[index]]
+                moves[index] = shortest_path(bot_coord, company_coord, visible_board)
+
 
 
         return moves
+
+def shortest_path(source, dest, visible_board):
+    return Direction.UP
+
+class PriorityQueue:
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (-priority, self._index, item))
+        self._index += 1
+
+    def pop(self):
+        return heapq.heappop(self._queue)[-1]
