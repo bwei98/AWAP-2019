@@ -88,13 +88,13 @@ class Team(object):
                 self.targets[index] = None
             else:
                 if self.targets[index] == None:
-                    company = self.pq.pop()
+                    company = self.pq.pop()[-1]
                     new_company_pts = self.company_info[company] / 2.0
                     self.company_info[company] = new_company_pts
                     self.pq.push(company, new_company_pts)
                     self.targets[index] = company
                     target_coord = self.lines[self.targets[index]][0]
-                    moves[index] = self.shortest_path(bot_coord, company_coord)
+                    moves[index] = self.shortest_path(bot_coord, target_coord)
 
         return moves
 
