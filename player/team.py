@@ -114,18 +114,22 @@ class Team(object):
             bot_coord = (bot.x, bot.y)
             if bot.line_pos != -1:
                 moves[index] = Direction.NONE
-            elif visible_board[bot.x][bot.y].get_line() != None:
+            elif visible_board[bot.x][bot.y].get_line() != None and visible_board[bot.x][bot.y].is_end_of_line():
                 moves[index] = Direction.ENTER
                 self.targets[index] = None
             else:
                 if self.targets[index] == None:
-                    company = self.pq.pop()[-1]
-                    new_company_pts = self.company_info[company] / 2.0
-                    self.company_info[company] = new_company_pts
-                    self.pq.push(company, new_company_pts)
-                    self.targets[index] = company
-                    target_coord = self.lines[self.targets[index]][0]
-                    moves[index] = self.shortest_path(bot_coord, target_coord)
+                    close_line = self.near_line(visible_board, index, bot)
+                    if close_line != None:
+                        moves[index] = close_line
+                    else:
+                        company = self.pq.pop()[-1]
+                        new_company_pts = self.company_info[company] / 2.0
+                        self.company_info[company] = new_company_pts
+                        self.pq.push(company, new_company_pts)
+                        self.targets[index] = company
+                        target_coord = self.lines[self.targets[index]][0]
+                        moves[index] = self.shortest_path(bot_coord, target_coord)
 
         return moves
 
@@ -156,7 +160,7 @@ class Team(object):
                             self.graph[(x,y-1)][1] = t
 
 
-    def shortest_path(self,source, dest):
+    def shortest_path(self, source, dest):
         mapping = dict()
         j = 0
         for i in self.graph.keys():
@@ -190,8 +194,29 @@ class Team(object):
                         prev[newnode] = node
         print(prev)
 
-
         return Direction.UP
+
+
+    def near_line(self, visible_board, index, bot):
+        if self.targets[index] == None:
+            return None
+        line_full = False
+        end_line = None
+        for xdiff in range(-2,3):
+            for ydiff in range(-2,3):
+                x,y= bot.x + xdiff, bot.y + ydiff
+                if self.in_bounds((x, y)) and targets[index] == visible_board[x][y].get_line():
+                    if visible_board[x][y].is_end_of_line():
+                        end_line = (x, y)
+                    if visible_board[x][y].get_num_bots() >= 3:
+                        line_full = True
+        if end_line != None:
+            return self.shortest_path((bot.x, bot.y), close_line)
+        elif line_full:
+            return self.shortest_path((bot.x, bot.y), self.lines[self.targets[index]][1])
+        else:
+            return None
+
 
 class MyPriorityQueue:
     def __init__(self):
