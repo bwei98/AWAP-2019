@@ -10,6 +10,7 @@ lrwalker
 alexs1
 """
 from awap2019 import Tile, Direction, State
+import numpy as np
 
 class Team(object):
     def __init__(self, initial_board, team_size, company_info):
@@ -22,17 +23,14 @@ class Team(object):
         on the wiki. team_size, although passed to you as a parameter, will
         always be 4.
         """
-        self.booths = dict()
         self.board = initial_board
         self.team_size = team_size
-        self.company_info = company_info
         self.team_name = "Player 2"# Add your team name here!
-        for j in range(len(initial_board)):
-            for i in range(len(initial_board[0])):
-                tile = initial_board[j][i]
-                if tile.get_booth() != None:
-                    self.booths[(i,j)] = tile.get_booth()
-        print(self.booths)
+
+        compAsList = [ [k,v] for k, v in company_info.items() ]
+        compAsList.sort(key = lambda x: -x[1])
+        self.sorted = compAsList
+        self.company_info = company_info
 
 
     def step(self, visible_board, states, score):
@@ -44,14 +42,14 @@ class Team(object):
         """
         moves = [0,0,0,0]
 
-        for bot in range(4):
-            info = states[bot]
-            if info.line_pos != -1:
-                moves[bot] = Direction.NONE
-            elif visible_board[info.x][info.y].get_line() != None:
-                moves[bot] = Direction.ENTER
+        for index in range(4):
+            bot = states[index]
+            if bot.line_pos != -1:
+                moves[index] = Direction.NONE
+            elif visible_board[bot.x][bot.y].get_line() != None:
+                moves[index] = Direction.ENTER
             else:
-                moves[bot] = Direction.UP
+                moves[index] = Direction.UP
 
 
         return moves
