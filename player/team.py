@@ -162,7 +162,6 @@ class Team(object):
         for i in self.graph.keys():
             mapping[i] = j
             j += 1
-        print(mapping)
         dist = [float("Inf")]*len(mapping)
         dist[mapping[(source)]] = 0
         heap = MyPriorityQueue()
@@ -170,10 +169,9 @@ class Team(object):
         prev[mapping[source]] = source
         for v in self.graph.keys():
             heap.push(v,dist[mapping[v]])
-        #print(heap._queue)
+
         while heap.isEmpty() != True:
             minval = heap.pop()
-            print(minval)
             node = minval[-1]
             for i in range(4):
                 if i == 0:
@@ -181,18 +179,31 @@ class Team(object):
                 elif i == 1:
                     newnode = (node[0]+1,node[1])
                 elif i == 2:
-                    newnode = (node[0]-1,node[1])
+                    newnode = (node[0],node[1]-1)
                 else:
-                    newnode = (node[0]+1,node[1])
+                    newnode = (node[0],node[1]+1)
                 if self.in_bounds(newnode):
                     if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
                         dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
-                        prev[newnode] = node
-        print(prev)
-
-
-        return Direction.UP
-
+                        prev[mapping[newnode]] = node
+                        heap.push(newnode,dist[mapping[newnode]])
+        returnpath = [dest]
+        cost = dist[mapping[dest]]
+        start = prev[mapping[dest]]
+        while(start != source):
+            returnpath.append(start)
+            start = prev[mapping[start]]
+        returnpath.append(source)
+        firstmove = returnpath[-2]
+        if source[0] > firstmove[0]:
+            return (Direction.UP,cost)
+        elif source[0] < firstmove[0]:
+            return (Direction.DOWN,cost)
+        elif source[1] > firstmove[1]:
+            return (Direction.LEFT,cost)
+        else:
+            return (Direction.RIGHT,cost)
+            
 class MyPriorityQueue:
     def __init__(self):
         self._queue = []
