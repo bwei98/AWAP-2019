@@ -31,7 +31,13 @@ class Team(object):
         compAsList.sort(key = lambda x: -x[1])
         self.sorted = compAsList
         self.company_info = company_info
-
+        self.booths = dict()
+        for i in range(len(initial_board)):
+            for j in range(len(initial_board[0])):
+                tile = initial_board[i][j]
+                if tile.get_booth() != None:
+                    self.booths[(i,j)] = tile.get_booth()
+        print(self.booths)
 
     def step(self, visible_board, states, score):
         """
