@@ -15,13 +15,7 @@ import heapq
 from collections import defaultdict
 
 class Team(object):
-    def checktile(self,i,j,rows,cols,initial_board):
-        if i < 0 or i >= rows or j < 0 or j >= cols:
-            return 2**31
-        elif initial_board[i][j].get_booth() != None:
-            return 2**31
-        else:
-            return initial_board[i][j].get_threshold()
+
     def __init__(self, initial_board, team_size, company_info):
         """
         The initializer is for you to precompute anything from the
@@ -33,23 +27,21 @@ class Team(object):
         always be 4.
         """
         self.graph = defaultdict(list)
-        for i in range(len(initial_board)):
-            for j in range(len(initial_board[0])):
+        self.num_rows = len(initial_board)
+        self.num_cols = len(initial_board[0])
+
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
                 tile = initial_board[i][j]
                 if tile.get_booth() != None:
                     self.graph[(i,j)] = [2**31]*4
                 else:
-                    tileup = self.checktile(i-1,j,len(initial_board),len(initial_board[0]),initial_board)
-                    tiledown = self.checktile(i+1,j,len(initial_board),len(initial_board[0]),initial_board)
-                    tileright = self.checktile(i,j+1,len(initial_board),len(initial_board[0]),initial_board)
-                    tileleft = self.checktile(i,j-1,len(initial_board),len(initial_board[0]),initial_board)
+                    tileup = self.checktile(i-1,j,self.num_rows,self.num_cols,initial_board)
+                    tiledown = self.checktile(i+1,j,self.num_rows,self.num_cols,initial_board)
+                    tileright = self.checktile(i,j+1,self.num_rows,self.num_cols,initial_board)
+                    tileleft = self.checktile(i,j-1,self.num_rows,self.num_cols,initial_board)
                     self.graph[(i,j)] = [tileup,tiledown,
                                          tileleft,tileright]
-        print(self.graph)
-        print("\n")
-
-        print(initial_board)
-
 
         self.board = initial_board
         self.team_size = team_size
@@ -57,7 +49,7 @@ class Team(object):
 
         compAsList = [ [k,v] for k, v in company_info.items() ]
         compAsList.sort(key = lambda x: -x[1])
-        q = PriorityQueue()
+        q = MaxPriorityQueue()
         for x in compAsList:
             name, pts = x
             q.push(name, pts)
@@ -65,13 +57,15 @@ class Team(object):
 
         self.company_info = company_info
         self.booths = dict()
-        for i in range(len(initial_board)):
-            for j in range(len(initial_board[0])):
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
                 tile = initial_board[i][j]
                 if tile.get_booth() != None:
                     self.booths[tile.get_booth()] = (i,j)
 
         self.targets = [None,None,None,None]
+
+
 
 
 
@@ -84,6 +78,8 @@ class Team(object):
         """
 
         moves = [0,0,0,0]
+
+        self.update_graph(states, visible_board)
 
         for index in range(4):
             bot = states[index]
@@ -103,9 +99,34 @@ class Team(object):
                 company_coord = self.booths[self.targets[index]]
                 moves[index] = self.shortest_path(bot_coord, company_coord)
 
-
-
         return moves
+
+
+    def checktile(self,i,j,rows,cols,initial_board):
+        if i < 0 or i >= rows or j < 0 or j >= cols:
+            return 2**31
+        elif initial_board[i][j].get_booth() != None:
+            return 2**31
+        else:
+            return initial_board[i][j].get_threshold()
+
+    def update_graph(self, states, visible_board):
+        for index in range(4):
+            bot = states[index]
+            for xdiff in range(-2,3):
+                for ydiff in range(-2,3):
+                    x,y= bot.x + xdiff, bot.y + ydiff
+                    if x >= 0 and y >= 0 and x < self.num_rows and y < self.num_cols:
+                        t = visible_board[x][y].get_threshold()
+                        if x+1 < self.num_rows:
+                            self.graph[(x+1,y)][2] = t
+                        if x > 0:
+                            self.graph[(x-1,y)][3] = t
+                        if y+1 < self.num_cols:
+                            self.graph[(x,y+1)][0] = t
+                        if y > 0:
+                            self.graph[(x,y-1)][1] = t
+
 
     def shortest_path(self,source, dest):
         mapping = dict()
@@ -159,7 +180,7 @@ class MyPriorityQueue:
     def isEmpty(self):
         return len(self._queue) == 0
 
-class PriorityQueue:
+class MaxPriorityQueue:
     def __init__(self):
         self._queue = []
         self._index = 0
