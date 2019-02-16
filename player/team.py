@@ -14,18 +14,6 @@ import numpy as np
 import heapq
 from collections import defaultdict
 
-<<<<<<< HEAD
-def checktile(self,i,j,rows,cols,initial_board):
-    if i < 0 or i >= rows or j < 0 or j >= cols:
-        return 2**31
-    elif initial_board[i][j].get_booth() != None:
-        return 2**31
-    else:
-        return initial_board[i][j].get_threshold()
-
-
-=======
->>>>>>> 52326f1895591866880a150919dbcce7cb6a8554
 class Team(object):
 
     def __init__(self, initial_board, team_size, company_info):
