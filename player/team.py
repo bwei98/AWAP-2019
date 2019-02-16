@@ -93,8 +93,8 @@ class Team(object):
                     self.company_info[company] = new_company_pts
                     self.pq.push(company, new_company_pts)
                     self.targets[index] = company
-                target_coord = self.lines[self.targets[index]][0]
-                moves[index] = shortest_path(bot_coord, target_coord, self.graph)
+                    target_coord = self.lines[self.targets[index]][0]
+                    moves[index] = self.shortest_path(bot_coord, company_coord)
 
         return moves
 
@@ -125,8 +125,57 @@ class Team(object):
                             self.graph[(x,y-1)][1] = t
 
 
-def shortest_path(source, dest, visible_board):
-    return Direction.UP
+    def shortest_path(self,source, dest):
+        mapping = dict()
+        j = 0
+        for i in self.graph.keys():
+            mapping[i] = j
+            j += 1
+        print(mapping)
+        dist = [float("Inf")]*len(mapping)
+        dist[mapping[(source)]] = 0
+        heap = MyPriorityQueue()
+        prev = [None]*len(mapping)
+        prev[mapping[source]] = source
+        for v in self.graph.keys():
+            heap.push(v,dist[mapping[v]])
+        #print(heap._queue)
+        while heap.isEmpty() != True:
+            minval = heap.pop()
+            print(minval)
+            node = minval[-1]
+            for i in range(4):
+                if i == 0:
+                    newnode = (node[0]-1,node[1])
+                elif i == 1:
+                    newnode = (node[0]+1,node[1])
+                elif i == 2:
+                    newnode = (node[0]-1,node[1])
+                else:
+                    newnode = (node[0]+1,node[1])
+                if in_bounds(newnode):
+                    if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
+                        dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
+                        prev[newnode] = node
+        print(prev)
+
+
+        return Direction.UP
+
+class MyPriorityQueue:
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (priority, self._index, item))
+        self._index += 1
+
+    def pop(self):
+        return heapq.heappop(self._queue)
+
+    def isEmpty(self):
+        return len(self._queue) == 0
 
 class MaxPriorityQueue:
     def __init__(self):
@@ -138,4 +187,7 @@ class MaxPriorityQueue:
         self._index += 1
 
     def pop(self):
-        return heapq.heappop(self._queue)[-1]
+        return heapq.heappop(self._queue)
+
+    def isEmpty(self):
+        return len(self._queue) == 0
