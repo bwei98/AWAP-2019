@@ -153,7 +153,7 @@ class Team(object):
                     newnode = (node[0]-1,node[1])
                 else:
                     newnode = (node[0]+1,node[1])
-                if in_bounds(newnode):
+                if self.in_bounds(newnode):
                     if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
                         dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
                         prev[newnode] = node
