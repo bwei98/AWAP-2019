@@ -80,12 +80,6 @@ class Team(object):
 
 
         compAsList = [ [k,v] for k, v in company_info.items() ]
-        # compAsList.sort(key = lambda x: -x[1])
-        # q = MaxPriorityQueue()
-        # for x in compAsList:
-        #     name, pts = x
-        #     q.push(name, pts)
-        #print(compAsList)
         self.companyList = compAsList
         self.num_companies = len(compAsList)
 
@@ -108,7 +102,7 @@ class Team(object):
         are, please look on the wiki.
         """
 
-        moves = [0,0,0,0]
+        moves = [None,None,None,None]
 
         self.update_graph(states, visible_board)
 
@@ -134,13 +128,12 @@ class Team(object):
                         name, ptVal = company
                         comp_loc = self.lines[name][0]
                         dist = self.shortest_path(bot_coord, comp_loc)[1]
-                        CONST = 1.2
-                        return (ptVal ** CONST) / (dist + 1)
+                        CONST = 2.5
+                        return -(ptVal ** CONST) / (dist + 1)
 
                     costList = map(costs, self.companyList)
                     list_with_ind = [(v, i) for i, v in enumerate(costList)]
                     list_with_ind.sort(key = lambda x: -x[0])
-                    #print(list_with_ind[0:5])
                     i = 0
                     while True:
                         nobody_going = True
@@ -153,6 +146,7 @@ class Team(object):
                         if nobody_going:
                             break;
                         if i == self.num_companies:
+                            # unreachable code unless the fewer than four companies
                             company = self.companyList[list_with_ind[0][1]][0]
                             i = 0
                             break;
@@ -161,8 +155,9 @@ class Team(object):
                     self.companyList[i][1] = new_company_pts
 
                     self.targets[index] = company
-                    target_coord = self.lines[self.targets[index]][0]
+                    target_coord = self.lines[self.targets[index]][1]
                     moves[index] = self.shortest_path(bot_coord, target_coord)[0]
+
         return moves
 
 
@@ -241,7 +236,6 @@ class Team(object):
             return (Direction.LEFT,cost)
         else:
             return (Direction.RIGHT,cost)
-
 
     def near_line(self, visible_board, index, bot):
         if self.targets[index] == None:
