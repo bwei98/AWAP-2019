@@ -22,10 +22,18 @@ class Team(object):
         on the wiki. team_size, although passed to you as a parameter, will
         always be 4.
         """
+        self.booths = dict()
         self.board = initial_board
         self.team_size = team_size
         self.company_info = company_info
         self.team_name = "Player 2"# Add your team name here!
+        for j in range(len(initial_board)):
+            for i in range(len(initial_board[0])):
+                tile = initial_board[j][i]
+                if tile.get_booth() != None:
+                    self.booths[(i,j)] = tile.get_booth()
+        print(self.booths)
+
 
     def step(self, visible_board, states, score):
         """
