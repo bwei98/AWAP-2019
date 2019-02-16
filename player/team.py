@@ -48,6 +48,16 @@ class Team(object):
         print(self.graph)
         print("\n")
 
+        self.lines = defaultdict(list)
+        for i in range(len(initial_board)):
+            for j in range(len(initial_board[0])):
+                tile = initial_board[i][j]
+                if tile.is_end_of_line():
+                    self.lines[tile.get_line()] = [(i, j)]
+
+        for company, start in self.lines.items():
+
+
         print(initial_board)
 
 
