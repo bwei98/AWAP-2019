@@ -78,13 +78,16 @@ class Team(object):
         self.team_size = team_size
         self.team_name = "Player 2"# Add your team name here!
 
+
         compAsList = [ [k,v] for k, v in company_info.items() ]
-        compAsList.sort(key = lambda x: -x[1])
-        q = MaxPriorityQueue()
-        for x in compAsList:
-            name, pts = x
-            q.push(name, pts)
-        self.pq = q
+        # compAsList.sort(key = lambda x: -x[1])
+        # q = MaxPriorityQueue()
+        # for x in compAsList:
+        #     name, pts = x
+        #     q.push(name, pts)
+        #print(compAsList)
+        self.companyList = compAsList
+        self.num_companies = len(compAsList)
 
         self.company_info = company_info
         self.booths = dict()
@@ -118,18 +121,50 @@ class Team(object):
                 moves[index] = Direction.ENTER
                 self.targets[index] = None
             else:
-                if self.targets[index] == None:
+                if self.targets[index] != None:
                     close_line = self.near_line(visible_board, index, bot)
                     if close_line != None:
                         moves[index] = close_line
                     else:
-                        company = self.pq.pop()[-1]
-                        new_company_pts = self.company_info[company] / 2.0
-                        self.company_info[company] = new_company_pts
-                        self.pq.push(company, new_company_pts)
-                        self.targets[index] = company
                         target_coord = self.lines[self.targets[index]][0]
                         moves[index] = self.shortest_path(bot_coord, target_coord)
+
+                else:
+                    def costs(company):
+                        name, ptVal = company
+                        comp_loc = self.lines[name][0]
+                        dist = self.shortest_path(bot_coord, comp_loc)[1]
+                        CONST = 1.2
+                        return ptVal / (dist ** CONST)
+
+                    costList = map(costs, self.companyList)
+                    list_with_ind = [(v, i) for i, v in enumerate(costList)]
+                    list_with_ind.sort(key = lambda x: -x[0])
+                    i = 0
+                    print(self.companyList)
+                    print(list_with_ind)
+                    while True:
+                        nobody_going = True
+                        company = self.companyList[list_with_ind[i][1]][0]
+                        for c in self.targets:
+                            if c == company:
+                                nobody_going = False
+                                i = i + 1
+                                break;
+                        if nobody_going:
+                            break;
+                        if i == self.num_companies:
+                            company = self.companyList[list_with_ind[0][1]][0]
+                            i = 0
+                            break;
+
+                    print("lllllll")
+                    new_company_pts = self.company_info[company] / 2.0
+                    self.company_info[company] = new_company_pts
+                    self.companyList[i][1] = new_company_pts
+
+                    self.targets[index] = company
+                    print(self.targets)
 
         return moves
 
@@ -166,35 +201,50 @@ class Team(object):
         for i in self.graph.keys():
             mapping[i] = j
             j += 1
-        print(mapping)
         dist = [float("Inf")]*len(mapping)
         dist[mapping[(source)]] = 0
         heap = MyPriorityQueue()
         prev = [None]*len(mapping)
         prev[mapping[source]] = source
-        for v in self.graph.keys():
-            heap.push(v,dist[mapping[v]])
-        #print(heap._queue)
+        visited = set()
+
+        heap.push(source,dist[mapping[source]])
+
         while heap.isEmpty() != True:
             minval = heap.pop()
-            print(minval)
             node = minval[-1]
+            visited.add(node)
             for i in range(4):
                 if i == 0:
                     newnode = (node[0]-1,node[1])
                 elif i == 1:
                     newnode = (node[0]+1,node[1])
                 elif i == 2:
-                    newnode = (node[0]-1,node[1])
+                    newnode = (node[0],node[1]-1)
                 else:
-                    newnode = (node[0]+1,node[1])
-                if self.in_bounds(newnode):
+                    newnode = (node[0],node[1]+1)
+                if self.in_bounds(newnode) and newnode not in visited:
                     if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
                         dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
-                        prev[newnode] = node
-        print(prev)
-
-        return Direction.UP
+                        prev[mapping[newnode]] = node
+                        heap.push(newnode,dist[mapping[newnode]])
+        returnpath = [dest]
+        cost = dist[mapping[dest]]
+        start = prev[mapping[dest]]
+        while(start != source):
+            returnpath.append(start)
+            start = prev[mapping[start]]
+        #print(returnpath)
+        returnpath.append(source)
+        firstmove = returnpath[-2]
+        if source[0] > firstmove[0]:
+            return (Direction.UP,cost)
+        elif source[0] < firstmove[0]:
+            return (Direction.DOWN,cost)
+        elif source[1] > firstmove[1]:
+            return (Direction.LEFT,cost)
+        else:
+            return (Direction.RIGHT,cost)
 
 
     def near_line(self, visible_board, index, bot):
@@ -205,13 +255,13 @@ class Team(object):
         for xdiff in range(-2,3):
             for ydiff in range(-2,3):
                 x,y= bot.x + xdiff, bot.y + ydiff
-                if self.in_bounds((x, y)) and targets[index] == visible_board[x][y].get_line():
+                if self.in_bounds((x, y)) and self.targets[index] == visible_board[x][y].get_line():
                     if visible_board[x][y].is_end_of_line():
                         end_line = (x, y)
                     if visible_board[x][y].get_num_bots() >= 3:
                         line_full = True
         if end_line != None:
-            return self.shortest_path((bot.x, bot.y), close_line)
+            return self.shortest_path((bot.x, bot.y), end_line)
         elif line_full:
             return self.shortest_path((bot.x, bot.y), self.lines[self.targets[index]][1])
         else:
