@@ -78,6 +78,7 @@ class Team(object):
         self.team_size = team_size
         self.team_name = "Player 2"# Add your team name here!
 
+
         compAsList = [ [k,v] for k, v in company_info.items() ]
         # compAsList.sort(key = lambda x: -x[1])
         # q = MaxPriorityQueue()
@@ -86,6 +87,7 @@ class Team(object):
         #     q.push(name, pts)
         #print(compAsList)
         self.companyList = compAsList
+        self.num_companies = len(compAsList)
 
         self.company_info = company_info
         self.booths = dict()
@@ -133,8 +135,10 @@ class Team(object):
                     list_with_ind.sort(key = lambda x: -x[0])
                     i = 0
                     nobody_going = True
+                    print(self.companyList)
+                    print(list_with_ind)
                     while True:
-                        company = self.companyList[list_with_int[i][1]][0]
+                        company = self.companyList[list_with_ind[i][1]][0]
                         for c in self.targets:
                             if c == company:
                                 nobody_going = False
@@ -142,12 +146,18 @@ class Team(object):
                                 break;
                         if nobody_going:
                             break;
+                        if i == self.num_companies:
+                            company = self.companyList[list_with_ind[0][1]][0]
+                            i = 0
+                            break;
 
+                    print("lllllll")
                     new_company_pts = self.company_info[company] / 2.0
                     self.company_info[company] = new_company_pts
-                    self.companyList[company_ind][1] = new_company_pts
+                    self.companyList[i][1] = new_company_pts
 
                     self.targets[index] = company
+                    print(self.targets)
                     target_coord = self.lines[self.targets[index]][0]
                     moves[index] = self.shortest_path(bot_coord, target_coord)
 
@@ -218,7 +228,7 @@ class Team(object):
         while(start != source):
             returnpath.append(start)
             start = prev[mapping[start]]
-        print(returnpath)
+        #print(returnpath)
         returnpath.append(source)
         firstmove = returnpath[-2]
         if source[0] > firstmove[0]:
