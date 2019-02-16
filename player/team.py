@@ -66,9 +66,6 @@ class Team(object):
         self.targets = [None,None,None,None]
 
 
-
-
-
     def step(self, visible_board, states, score):
         """
         The step function should return a list of four Directions.
@@ -92,12 +89,12 @@ class Team(object):
             else:
                 if self.targets[index] == None:
                     company = self.pq.pop()
-                    new_company_pts = self.company_info[company] / 2
+                    new_company_pts = self.company_info[company] / 2.0
                     self.company_info[company] = new_company_pts
                     self.pq.push(company, new_company_pts)
                     self.targets[index] = company
-                company_coord = self.booths[self.targets[index]]
-                moves[index] = shortest_path(bot_coord, company_coord, self.graph)
+                target_coord = self.lines[self.targets[index]][0]
+                moves[index] = shortest_path(bot_coord, target_coord, self.graph)
 
         return moves
 
