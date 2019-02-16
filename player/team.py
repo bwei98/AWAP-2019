@@ -167,12 +167,14 @@ class Team(object):
         heap = MyPriorityQueue()
         prev = [None]*len(mapping)
         prev[mapping[source]] = source
-        for v in self.graph.keys():
-            heap.push(v,dist[mapping[v]])
+        visited = set()
+
+        heap.push(source,dist[mapping[source]])
 
         while heap.isEmpty() != True:
             minval = heap.pop()
             node = minval[-1]
+            visited.add(node)
             for i in range(4):
                 if i == 0:
                     newnode = (node[0]-1,node[1])
@@ -182,7 +184,7 @@ class Team(object):
                     newnode = (node[0],node[1]-1)
                 else:
                     newnode = (node[0],node[1]+1)
-                if self.in_bounds(newnode):
+                if self.in_bounds(newnode) and newnode not in visited:
                     if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
                         dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
                         prev[mapping[newnode]] = node
@@ -193,6 +195,7 @@ class Team(object):
         while(start != source):
             returnpath.append(start)
             start = prev[mapping[start]]
+        print(returnpath)
         returnpath.append(source)
         firstmove = returnpath[-2]
         if source[0] > firstmove[0]:
@@ -203,7 +206,7 @@ class Team(object):
             return (Direction.LEFT,cost)
         else:
             return (Direction.RIGHT,cost)
-            
+
 class MyPriorityQueue:
     def __init__(self):
         self._queue = []
