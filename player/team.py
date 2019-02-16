@@ -127,7 +127,7 @@ class Team(object):
                         moves[index] = close_line
                     else:
                         target_coord = self.lines[self.targets[index]][0]
-                        moves[index] = self.shortest_path(bot_coord, target_coord)
+                        moves[index] = self.shortest_path(bot_coord, target_coord)[0]
 
                 else:
                     def costs(company):
@@ -135,14 +135,13 @@ class Team(object):
                         comp_loc = self.lines[name][0]
                         dist = self.shortest_path(bot_coord, comp_loc)[1]
                         CONST = 1.2
-                        return ptVal / (dist ** CONST)
+                        return (ptVal ** CONST) / (dist + 1)
 
                     costList = map(costs, self.companyList)
                     list_with_ind = [(v, i) for i, v in enumerate(costList)]
                     list_with_ind.sort(key = lambda x: -x[0])
+                    #print(list_with_ind[0:5])
                     i = 0
-                    print(self.companyList)
-                    print(list_with_ind)
                     while True:
                         nobody_going = True
                         company = self.companyList[list_with_ind[i][1]][0]
@@ -157,15 +156,13 @@ class Team(object):
                             company = self.companyList[list_with_ind[0][1]][0]
                             i = 0
                             break;
-
-                    print("lllllll")
                     new_company_pts = self.company_info[company] / 2.0
                     self.company_info[company] = new_company_pts
                     self.companyList[i][1] = new_company_pts
 
                     self.targets[index] = company
-                    print(self.targets)
-
+                    target_coord = self.lines[self.targets[index]][0]
+                    moves[index] = self.shortest_path(bot_coord, target_coord)[0]
         return moves
 
 
@@ -193,7 +190,6 @@ class Team(object):
                             self.graph[(x,y+1)][0] = t
                         if y > 0:
                             self.graph[(x,y-1)][1] = t
-
 
     def shortest_path(self, source, dest):
         mapping = dict()
@@ -261,9 +257,9 @@ class Team(object):
                     if visible_board[x][y].get_num_bots() >= 3:
                         line_full = True
         if end_line != None:
-            return self.shortest_path((bot.x, bot.y), end_line)
+            return self.shortest_path((bot.x, bot.y), end_line)[0]
         elif line_full:
-            return self.shortest_path((bot.x, bot.y), self.lines[self.targets[index]][1])
+            return self.shortest_path((bot.x, bot.y), self.lines[self.targets[index]][1])[0]
         else:
             return None
 
