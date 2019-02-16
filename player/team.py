@@ -39,6 +39,34 @@ class Team(object):
                     self.booths[(i,j)] = tile.get_booth()
         print(self.booths)
 
+    def shortestpath(sourcetile,desttile,visible_board):
+        
+
+        moveup = False
+        movedown = False
+        moveleft = False
+        moveright = False
+        if desttile[0] < sourcetile[0]:
+            moveup = True
+        else:
+            movedown = True
+        if destile[1] < sourcetile[1]:
+            moveleft = True
+        else:
+            moveright = True
+        if moveup and moveright:
+            uptile = visible_board[inputx+1][inputy]
+            righttile = visible_board[inputx][inputy]
+
+
+
+        """
+        Input: Source coordinates, Destination Coordinates
+        Output: Direction to move in
+        """
+
+
+
     def step(self, visible_board, states, score):
         """
         The step function should return a list of four Directions.
@@ -46,6 +74,7 @@ class Team(object):
         For more information on what visible_board, states, and score
         are, please look on the wiki.
         """
+
         moves = [0,0,0,0]
 
         for index in range(4):
