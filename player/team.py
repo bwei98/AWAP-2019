@@ -79,12 +79,13 @@ class Team(object):
         self.team_name = "Player 2"# Add your team name here!
 
         compAsList = [ [k,v] for k, v in company_info.items() ]
-        compAsList.sort(key = lambda x: -x[1])
-        q = MaxPriorityQueue()
-        for x in compAsList:
-            name, pts = x
-            q.push(name, pts)
-        self.pq = q
+        # compAsList.sort(key = lambda x: -x[1])
+        # q = MaxPriorityQueue()
+        # for x in compAsList:
+        #     name, pts = x
+        #     q.push(name, pts)
+        #print(compAsList)
+        self.companyList = compAsList
 
         self.company_info = company_info
         self.booths = dict()
@@ -119,10 +120,33 @@ class Team(object):
                 self.targets[index] = None
             else:
                 if self.targets[index] == None:
-                    company = self.pq.pop()[-1]
+
+                    def costs(company):
+                        name, ptVal = company
+                        comp_loc = self.lines[name][0]
+                        dist = self.shortest_path(bot_coord, comp_loc)[1]
+                        CONST = 1.2
+                        return ptVal / (dist ** CONST)
+
+                    costList = map(costs, self.companyList)
+                    list_with_ind = [(v, i) for i, v in enumerate(costList)]
+                    list_with_ind.sort(key = lambda x: -x[0])
+                    i = 0
+                    nobody_going = True
+                    while True:
+                        company = self.companyList[list_with_int[i][1]][0]
+                        for c in self.targets:
+                            if c == company:
+                                nobody_going = False
+                                i = i + 1
+                                break;
+                        if nobody_going:
+                            break;
+
                     new_company_pts = self.company_info[company] / 2.0
                     self.company_info[company] = new_company_pts
-                    self.pq.push(company, new_company_pts)
+                    self.companyList[company_ind][1] = new_company_pts
+
                     self.targets[index] = company
                     target_coord = self.lines[self.targets[index]][0]
                     moves[index] = self.shortest_path(bot_coord, target_coord)
@@ -154,7 +178,6 @@ class Team(object):
                             self.graph[(x,y+1)][0] = t
                         if y > 0:
                             self.graph[(x,y-1)][1] = t
-
 
     def shortest_path(self,source, dest):
         mapping = dict()
