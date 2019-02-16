@@ -12,8 +12,16 @@ alexs1
 from awap2019 import Tile, Direction, State
 import numpy as np
 import heapq
+from collections import defaultdict
 
 class Team(object):
+    def checktile(self,i,j,rows,cols,initial_board):
+        if i < 0 or i >= rows or j < 0 or j >= cols:
+            return 2**31
+        elif initial_board[i][j].get_booth() != None:
+            return 2**31
+        else:
+            return initial_board[i][j].get_threshold()
     def __init__(self, initial_board, team_size, company_info):
         """
         The initializer is for you to precompute anything from the
@@ -24,6 +32,25 @@ class Team(object):
         on the wiki. team_size, although passed to you as a parameter, will
         always be 4.
         """
+        self.graph = defaultdict(list)
+        for i in range(len(initial_board)):
+            for j in range(len(initial_board[0])):
+                tile = initial_board[i][j]
+                if tile.get_booth() != None:
+                    self.graph[(i,j)] = [2**31]*4
+                else:
+                    tileup = self.checktile(i-1,j,len(initial_board),len(initial_board[0]),initial_board)
+                    tiledown = self.checktile(i+1,j,len(initial_board),len(initial_board[0]),initial_board)
+                    tileright = self.checktile(i,j+1,len(initial_board),len(initial_board[0]),initial_board)
+                    tileleft = self.checktile(i,j-1,len(initial_board),len(initial_board[0]),initial_board)
+                    self.graph[(i,j)] = [tileup,tiledown,
+                                         tileleft,tileright]
+        print(self.graph)
+        print("\n")
+
+        print(initial_board)
+
+
         self.board = initial_board
         self.team_size = team_size
         self.team_name = "Player 2"# Add your team name here!
@@ -45,32 +72,6 @@ class Team(object):
                     self.booths[tile.get_booth()] = (i,j)
 
         self.targets = [None,None,None,None]
-
-    def shortestpath(sourcetile,desttile,visible_board):
-        
-
-        moveup = False
-        movedown = False
-        moveleft = False
-        moveright = False
-        if desttile[0] < sourcetile[0]:
-            moveup = True
-        else:
-            movedown = True
-        if destile[1] < sourcetile[1]:
-            moveleft = True
-        else:
-            moveright = True
-        if moveup and moveright:
-            uptile = visible_board[inputx+1][inputy]
-            righttile = visible_board[inputx][inputy]
-
-
-
-        """
-        Input: Source coordinates, Destination Coordinates
-        Output: Direction to move in
-        """
 
 
 
