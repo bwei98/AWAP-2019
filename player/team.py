@@ -16,6 +16,9 @@ from collections import defaultdict
 
 class Team(object):
 
+    def in_bounds(self, coords):
+        return 0 <= coords[0] and coords[0] < self.num_rows and 0 <= coords[1] and coords[1] < self.num_cols
+
     def __init__(self, initial_board, team_size, company_info):
         """
         The initializer is for you to precompute anything from the
@@ -30,8 +33,6 @@ class Team(object):
         self.num_rows = len(initial_board)
         self.num_cols = len(initial_board[0])
 
-        def in_bounds(self,coords):
-            return 0 <= coords[0] and coords[0] < num_rows and 0 <= coords[1] and coords[1] < num_cols
 
         for i in range(self.num_rows):
             for j in range(self.num_cols):
@@ -54,7 +55,8 @@ class Team(object):
                 if tile.is_end_of_line():
                     self.lines[tile.get_line()] = [(i, j)]
 
-        for company, (x, y) in self.lines.items():
+        for company in self.lines:
+            (x, y) = self.lines[company][0]
             end = (x, y)
             while self.in_bounds((x-1, y)) and initial_board[x-1][y].get_line() == company:
                 end = (x-1, y)
@@ -182,7 +184,7 @@ class Team(object):
                     newnode = (node[0]-1,node[1])
                 else:
                     newnode = (node[0]+1,node[1])
-                if in_bounds(newnode):
+                if self.in_bounds(newnode):
                     if dist[mapping[node]] + self.graph[node][i] < dist[mapping[newnode]]:
                         dist[mapping[newnode]] = dist[mapping[node]] + self.graph[node][i]
                         prev[newnode] = node
