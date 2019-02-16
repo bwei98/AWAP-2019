@@ -14,14 +14,6 @@ import numpy as np
 import heapq
 from collections import defaultdict
 
-def checktile(self,i,j,rows,cols,initial_board):
-    if i < 0 or i >= rows or j < 0 or j >= cols:
-        return 2**31
-    elif initial_board[i][j].get_booth() != None:
-        return 2**31
-    else:
-        return initial_board[i][j].get_threshold()
-
 class Team(object):
 
     def __init__(self, initial_board, team_size, company_info):
@@ -57,7 +49,7 @@ class Team(object):
 
         compAsList = [ [k,v] for k, v in company_info.items() ]
         compAsList.sort(key = lambda x: -x[1])
-        q = PriorityQueue()
+        q = MaxPriorityQueue()
         for x in compAsList:
             name, pts = x
             q.push(name, pts)
@@ -75,6 +67,8 @@ class Team(object):
 
 
 
+
+
     def step(self, visible_board, states, score):
         """
         The step function should return a list of four Directions.
@@ -85,7 +79,7 @@ class Team(object):
 
         moves = [0,0,0,0]
 
-        update_graph(self.graph, states)
+        self.update_graph(states, visible_board)
 
         for index in range(4):
             bot = states[index]
@@ -103,26 +97,41 @@ class Team(object):
                     self.pq.push(company, new_company_pts)
                     self.targets[index] = company
                 company_coord = self.booths[self.targets[index]]
-                moves[index] = shortest_path(bot_coord, company_coord, visible_board)
+                moves[index] = shortest_path(bot_coord, company_coord, self.graph)
 
         return moves
 
-def update_graph(self, states):
-    for i in range(4):
-        bot = states[index]
-        i,j= bot.x, bot.y
-        tileup = self.checktile(i-1,j,self.num_rows,self.num_cols,initial_board)
-        tiledown = self.checktile(i+1,j,self.num_rows,self.num_cols,initial_board)
-        tileright = self.checktile(i,j+1,self.num_rows,self.num_cols,initial_board)
-        tileleft = self.checktile(i,j-1,self.num_rows,self.num_cols,initial_board)
-        self.graph[(i,j)] = [tileup,tiledown,
-                             tileleft,tileright]
+
+    def checktile(self,i,j,rows,cols,initial_board):
+        if i < 0 or i >= rows or j < 0 or j >= cols:
+            return 2**31
+        elif initial_board[i][j].get_booth() != None:
+            return 2**31
+        else:
+            return initial_board[i][j].get_threshold()
+
+    def update_graph(self, states, visible_board):
+        for index in range(4):
+            bot = states[index]
+            for xdiff in range(-2,3):
+                for ydiff in range(-2,3):
+                    x,y= bot.x + xdiff, bot.y + ydiff
+                    if x >= 0 and y >= 0 and x < self.num_rows and y < self.num_cols:
+                        t = visible_board[x][y].get_threshold()
+                        if x+1 < self.num_rows:
+                            self.graph[(x+1,y)][2] = t
+                        if x > 0:
+                            self.graph[(x-1,y)][3] = t
+                        if y+1 < self.num_cols:
+                            self.graph[(x,y+1)][0] = t
+                        if y > 0:
+                            self.graph[(x,y-1)][1] = t
 
 
 def shortest_path(source, dest, visible_board):
     return Direction.UP
 
-class PriorityQueue:
+class MaxPriorityQueue:
     def __init__(self):
         self._queue = []
         self._index = 0
