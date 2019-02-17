@@ -128,8 +128,9 @@ class Team(object):
                         name, ptVal = company
                         comp_loc = self.lines[name][0]
                         dist = self.shortest_path(bot_coord, comp_loc)[1]
-                        CONST = 2.5
-                        return -(ptVal ** CONST) / (dist + 1)
+                        magic_number_1 = 2.15
+                        magic_number_2 = 2
+                        return -(ptVal ** magic_number_1) / (magic_number_2 * dist + 1)
 
                     costList = map(costs, self.companyList)
                     list_with_ind = [(v, i) for i, v in enumerate(costList)]
@@ -146,7 +147,7 @@ class Team(object):
                         if nobody_going:
                             break;
                         if i == self.num_companies:
-                            # unreachable code unless the fewer than four companies
+                            # unreachable code unless fewer than four companies
                             company = self.companyList[list_with_ind[0][1]][0]
                             i = 0
                             break;
